@@ -1,0 +1,96 @@
+<%+header%>
+<script type="text/javascript" src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script type="text/javascript" src="<%=resource%>/view/8311.js"></script>
+
+<h2 name="content"><%:VLAN Configuration%></h2>
+<div class="cbi-map">
+  <div class="cbi-section">
+    <div class="cbi-section-node">
+      <div class="cbi-value">
+        <div class="cbi-value-title"><%:VLAN Status%></div>
+        <div class="cbi-value-field">
+          <button class="cbi-button" onclick="getVlanTables()"><%:Refresh VLAN Info%></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cbi-section">
+    <h3><%:Extended VLAN Tables%></h3>
+    <div class="cbi-section-node">
+      <div class="content_syslog">
+        <textarea id="vlan_tables" style="font-size:10pt; font-family: monospace;" readonly="readonly" wrap="off" rows="24"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="cbi-section">
+    <h3><%:Multicast VLAN Configuration%></h3>
+    <div class="cbi-section-node">
+      <div class="cbi-value">
+        <div class="cbi-value-title"><%:Downstream Multicast TCI%></div>
+        <div class="cbi-value-field">
+          <input type="text" id="ds_mc_tci" class="cbi-input-text" size="6" maxlength="4" placeholder="8100">
+        </div>
+      </div>
+      <div class="cbi-value">
+        <div class="cbi-value-title"><%:Upstream Multicast VID%></div>
+        <div class="cbi-value-field">
+          <input type="text" id="us_mc_vid" class="cbi-input-text" size="6" maxlength="4" placeholder="36">
+        </div>
+      </div>
+      <div class="cbi-value">
+        <div class="cbi-value-field">
+          <button class="cbi-button cbi-button-apply" onclick="applyMulticastVlan()"><%:Apply Multicast VLAN Settings%></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function getVlanTables() {
+  $('#vlan_tables').val("<%:Loading VLAN information...%>");
+  
+  $.ajax({
+    url: '<%=luci.dispatcher.build_url("admin", "8311", "vlans", "extvlans")%>',
+    method: 'GET',
+    success: function(data) {
+      $('#vlan_tables').val(data);
+    },
+    error: function() {
+      $('#vlan_tables').val("<%:Error loading VLAN information%>");
+    }
+  });
+}
+
+function applyMulticastVlan() {
+  var ds_mc_tci = $('#ds_mc_tci').val();
+  var us_mc_vid = $('#us_mc_vid').val();
+  
+  $.ajax({
+    url: '<%=luci.dispatcher.build_url("admin", "services", "uci", "set")%>',
+    method: 'POST',
+    data: {
+      config: '8311',
+      section: 'config',
+      options: {
+        ds_mc_tci: ds_mc_tci,
+        us_mc_vid: us_mc_vid
+      }
+    },
+    success: function() {
+      alert('<%:Multicast VLAN settings applied. Changes will take effect after service restart.%>');
+    },
+    error: function() {
+      alert('<%:Error applying VLAN settings%>');
+    }
+  });
+}
+
+$(document).ready(function() {
+  getVlanTables();
+});
+</script>
+
+<%+footer%> 

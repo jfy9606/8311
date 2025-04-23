@@ -1,4 +1,0 @@
-[submodule "8311-xgspon-bypass"]
-	path = 8311-xgspon-bypass
-	branch = master
-	url = https://github.com/jfy9606/8311-scripts.git
